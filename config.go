@@ -14,7 +14,7 @@ type apiConfig struct {
 	port string
 }
 
-func initAPIConfig() *apiConfig {
+func initApiConfig() *apiConfig {
 
 	godotenv.Load()
 	port := os.Getenv("PORT")

@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	cfg := initAPIConfig()
+	cfg := initApiConfig()
 	srv := cfg.initServer()
 
 	log.Printf("Serving on port: %s\n", cfg.port)

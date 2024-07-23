@@ -1,9 +1,13 @@
 package main
 
-import "log"
+import (
+	"log"
+
+	_ "github.com/lib/pq"
+)
 
 func main() {
-	cfg := initConfig()
+	cfg := initAPIConfig()
 	srv := cfg.initServer()
 
 	log.Printf("Serving on port: %s\n", cfg.port)

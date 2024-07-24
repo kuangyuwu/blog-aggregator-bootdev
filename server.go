@@ -13,6 +13,7 @@ func (cfg *apiConfig) initServer() *http.Server {
 	mux.HandleFunc("GET /v1/users", cfg.middlewareAuth(cfg.authedHandlerGetUser))
 
 	mux.HandleFunc("POST /v1/feeds", cfg.middlewareAuth(cfg.authedHandlerCreateFeed))
+	mux.HandleFunc("GET /v1/feeds", cfg.handlerGetAllFeeds)
 
 	return &http.Server{
 		Addr:    ":" + cfg.port,

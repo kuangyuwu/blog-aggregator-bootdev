@@ -12,6 +12,24 @@ import (
 	"github.com/kuangyuwu/blog-aggregator-bootdev/internal/database"
 )
 
+type User struct {
+	ID        string `json:"id"`
+	CreatedAt string `json:"created_at"`
+	UpdatedAt string `json:"updated_at"`
+	Name      string `json:"name"`
+	ApiKey    string `json:"api_key"`
+}
+
+func dbUserToUser(u database.User) User {
+	return User{
+		ID:        u.ID.String(),
+		CreatedAt: u.CreatedAt.UTC().Format(time.RFC3339),
+		UpdatedAt: u.UpdatedAt.UTC().Format(time.RFC3339),
+		Name:      u.Name,
+		ApiKey:    u.ApiKey,
+	}
+}
+
 func (cfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Request) {
 
 	decoder := json.NewDecoder(r.Body)
@@ -45,21 +63,7 @@ func (cfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	payload := struct {
-		ID        string `json:"id"`
-		CreatedAt string `json:"created_at"`
-		UpdatedAt string `json:"updated_at"`
-		Name      string `json:"name"`
-		ApiKey    string `json:"api_key"`
-	}{
-		ID:        user.ID.String(),
-		CreatedAt: user.CreatedAt.UTC().Format(time.RFC3339),
-		UpdatedAt: user.UpdatedAt.UTC().Format(time.RFC3339),
-		Name:      user.Name,
-		ApiKey:    user.ApiKey,
-	}
-
-	respondWithJSON(w, http.StatusCreated, payload)
+	respondWithJSON(w, http.StatusCreated, dbUserToUser(user))
 }
 
 func generateApiKey() (string, error) {
@@ -74,20 +78,5 @@ func generateApiKey() (string, error) {
 }
 
 func (cfg *apiConfig) authedHandlerGetUser(w http.ResponseWriter, r *http.Request, u database.User) {
-
-	payload := struct {
-		ID        string `json:"id"`
-		CreatedAt string `json:"created_at"`
-		UpdatedAt string `json:"updated_at"`
-		Name      string `json:"name"`
-		ApiKey    string `json:"api_key"`
-	}{
-		ID:        u.ID.String(),
-		CreatedAt: u.CreatedAt.UTC().Format(time.RFC3339),
-		UpdatedAt: u.UpdatedAt.UTC().Format(time.RFC3339),
-		Name:      u.Name,
-		ApiKey:    u.ApiKey,
-	}
-
-	respondWithJSON(w, http.StatusOK, payload)
+	respondWithJSON(w, http.StatusOK, dbUserToUser(u))
 }

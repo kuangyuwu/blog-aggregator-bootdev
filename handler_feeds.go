@@ -10,6 +10,26 @@ import (
 	"github.com/kuangyuwu/blog-aggregator-bootdev/internal/database"
 )
 
+type Feed struct {
+	ID        string `json:"id"`
+	CreatedAt string `json:"created_at"`
+	UpdatedAt string `json:"updated_at"`
+	Name      string `json:"name"`
+	Url       string `json:"url"`
+	UserID    string `json:"user_id"`
+}
+
+func dbFeedtoFeed(f database.Feed) Feed {
+	return Feed{
+		ID:        f.ID.String(),
+		CreatedAt: f.CreatedAt.UTC().Format(time.RFC3339),
+		UpdatedAt: f.UpdatedAt.UTC().Format(time.RFC3339),
+		Name:      f.Name,
+		Url:       f.Url,
+		UserID:    f.UserID.String(),
+	}
+}
+
 func (cfg *apiConfig) authedHandlerCreateFeed(w http.ResponseWriter, r *http.Request, u database.User) {
 	decoder := json.NewDecoder(r.Body)
 	params := struct {
@@ -37,20 +57,21 @@ func (cfg *apiConfig) authedHandlerCreateFeed(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	payload := struct {
-		ID        string `json:"id"`
-		CreatedAt string `json:"created_at"`
-		UpdatedAt string `json:"updated_at"`
-		Name      string `json:"name"`
-		Url       string `json:"url"`
-		UserID    string `json:"user_id"`
-	}{
-		ID:        feed.ID.String(),
-		CreatedAt: feed.CreatedAt.UTC().Format(time.RFC3339),
-		UpdatedAt: feed.UpdatedAt.UTC().Format(time.RFC3339),
-		Name:      feed.Name,
-		Url:       feed.Url,
-		UserID:    feed.UserID.String(),
+	respondWithJSON(w, http.StatusOK, dbFeedtoFeed(feed))
+}
+
+func (cfg *apiConfig) handlerGetAllFeeds(w http.ResponseWriter, r *http.Request) {
+	feeds, err := cfg.DB.GetAllFeed(r.Context())
+	if err != nil {
+		log.Printf("Error getting feeds: %s", err)
+		respondWithError(w, http.StatusInternalServerError, "Error getting feeds")
+		return
+	}
+
+	l := len(feeds)
+	payload := make([]Feed, l)
+	for i, f := range feeds {
+		payload[i] = dbFeedtoFeed(f)
 	}
 
 	respondWithJSON(w, http.StatusOK, payload)

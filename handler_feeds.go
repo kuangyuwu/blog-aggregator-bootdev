@@ -57,7 +57,26 @@ func (cfg *apiConfig) authedHandlerCreateFeed(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	respondWithJSON(w, http.StatusOK, dbFeedtoFeed(feed))
+	feedFollow, err := cfg.DB.CreateFeedFollow(r.Context(), database.CreateFeedFollowParams{
+		ID:        uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		UserID:    u.ID,
+		FeedID:    feed.ID,
+	})
+	if err != nil {
+		log.Printf("Error creating feed follow: %s", err)
+		respondWithError(w, http.StatusInternalServerError, "Error creating feed follow")
+		return
+	}
+
+	respondWithJSON(w, http.StatusCreated, struct {
+		Feed       Feed       `json:"feed"`
+		FeedFollow FeedFollow `json:"feed_follow"`
+	}{
+		Feed:       dbFeedtoFeed(feed),
+		FeedFollow: dbFeedFollowtoFeedFollow(feedFollow),
+	})
 }
 
 func (cfg *apiConfig) handlerGetAllFeeds(w http.ResponseWriter, r *http.Request) {
